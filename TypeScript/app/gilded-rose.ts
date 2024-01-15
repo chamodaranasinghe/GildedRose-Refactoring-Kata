@@ -1,3 +1,6 @@
+import { assert } from "console";
+import { ItemNames, MAX_ITEM_QUALITY } from "./constants";
+
 export class Item {
   name: string;
   sellIn: number;
@@ -17,50 +20,80 @@ export class GildedRose {
     this.items = items;
   }
 
+  private updateAgedBrieItem(item: Item) {
+    assert(item.name == ItemNames.AGED_BRIE);
+    if (item.quality < MAX_ITEM_QUALITY) {
+      item.quality = item.quality + 1;
+    }
+    if (item.name != ItemNames.SULFURAS) {
+      item.sellIn = item.sellIn - 1;
+    }
+    if (item.sellIn < 0 && item.quality < MAX_ITEM_QUALITY) {
+      item.quality = item.quality + 1;
+    }
+  }
+
+  private updateBackstagePassesItem(item: Item) {
+    assert(item.name == ItemNames.BACKSTAGE_PASSES);
+    if (item.quality < MAX_ITEM_QUALITY) {
+      item.quality = item.quality + 1;
+      if (item.name == ItemNames.BACKSTAGE_PASSES && item.sellIn < 11) {
+        if (item.sellIn < 11 && item.quality < MAX_ITEM_QUALITY) {
+          item.quality = item.quality + 1;
+        }
+        if (item.sellIn < 6 && item.quality < MAX_ITEM_QUALITY) {
+          item.quality = item.quality + 1;
+        }
+      }
+    }
+    if (item.name != ItemNames.SULFURAS) {
+      item.sellIn = item.sellIn - 1;
+    }
+    if (item.sellIn < 0) {
+      item.quality = 0;
+    }
+  }
+
+  private updateSulfurasItem(item: Item) {
+    assert(item.name == ItemNames.SULFURAS);
+    // this function does not update the item (tests are still passing without any logic in this function)
+  }
+
+  private updateNormalItem(item: Item) {
+    assert(
+      item.name != ItemNames.AGED_BRIE &&
+        item.name != ItemNames.BACKSTAGE_PASSES &&
+        item.name != ItemNames.SULFURAS
+    );
+    if (item.quality > 0) {
+      item.quality = item.quality - 1;
+    }
+    item.sellIn = item.sellIn - 1;
+    if (item.sellIn < 0 && item.quality > 0) {
+      item.quality = item.quality - 1;
+    }
+  }
+
+  private updateConjuredItem(item: Item) {
+    assert(item.name == ItemNames.CONJURED_CAKE);
+    //business logic to be implemented
+  }
+
   updateQuality() {
-    for (let i = 0; i < this.items.length; i++) {
-      if (this.items[i].name != 'Aged Brie' && this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-        if (this.items[i].quality > 0) {
-          if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-            this.items[i].quality = this.items[i].quality - 1
-          }
-        }
-      } else {
-        if (this.items[i].quality < 50) {
-          this.items[i].quality = this.items[i].quality + 1
-          if (this.items[i].name == 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].sellIn < 11) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1
-              }
-            }
-            if (this.items[i].sellIn < 6) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1
-              }
-            }
-          }
-        }
-      }
-      if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-        this.items[i].sellIn = this.items[i].sellIn - 1;
-      }
-      if (this.items[i].sellIn < 0) {
-        if (this.items[i].name != 'Aged Brie') {
-          if (this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].quality > 0) {
-              if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-                this.items[i].quality = this.items[i].quality - 1
-              }
-            }
-          } else {
-            this.items[i].quality = this.items[i].quality - this.items[i].quality
-          }
-        } else {
-          if (this.items[i].quality < 50) {
-            this.items[i].quality = this.items[i].quality + 1
-          }
-        }
+    for (const item of this.items) {
+      switch (item.name) {
+        case ItemNames.AGED_BRIE:
+          this.updateAgedBrieItem(item);
+          continue;
+        case ItemNames.BACKSTAGE_PASSES:
+          this.updateBackstagePassesItem(item);
+          continue;
+        case ItemNames.SULFURAS:
+          this.updateSulfurasItem(item);
+          continue;
+        default:
+          this.updateNormalItem(item);
+          continue;
       }
     }
 
